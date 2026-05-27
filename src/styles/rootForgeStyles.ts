@@ -1,0 +1,851 @@
+import { Platform, StyleSheet } from 'react-native';
+
+import { radius, spacing } from '../theme/tokens';
+
+export type RootForgeTheme = {
+  mode: 'light' | 'dark';
+  ink: string;
+  graphite: string;
+  slate: string;
+  muted: string;
+  paper: string;
+  panel: string;
+  panelStrong: string;
+  line: string;
+  blue: string;
+  cyan: string;
+  green: string;
+  amber: string;
+  red: string;
+  violet: string;
+  shadow: string;
+  terminal: string;
+  terminalText: string;
+  terminalDim: string;
+};
+
+export const rootForgeThemes: Record<'light' | 'dark', RootForgeTheme> = {
+  light: {
+    mode: 'light',
+    ink: '#101318',
+    graphite: '#202632',
+    slate: '#657084',
+    muted: '#7a8496',
+    paper: '#f7f9fd',
+    panel: '#ffffff',
+    panelStrong: '#fbfdff',
+    line: '#d8dee8',
+    blue: '#0f63ff',
+    cyan: '#0d9488',
+    green: '#1f9d55',
+    amber: '#c77700',
+    red: '#d3374a',
+    violet: '#7557d8',
+    shadow: 'rgba(35, 55, 90, 0.12)',
+    terminal: '#0f1722',
+    terminalText: '#e9f1ff',
+    terminalDim: '#95a0b4',
+  },
+  dark: {
+    mode: 'dark',
+    ink: '#f7fbff',
+    graphite: '#dbe7f6',
+    slate: '#a8b6ca',
+    muted: '#7f8da2',
+    paper: '#06111d',
+    panel: '#0b1826',
+    panelStrong: '#101f31',
+    line: '#213247',
+    blue: '#3f7cff',
+    cyan: '#3ee0d0',
+    green: '#52d68a',
+    amber: '#f8c14a',
+    red: '#ff6677',
+    violet: '#a88cff',
+    shadow: 'rgba(0, 0, 0, 0.42)',
+    terminal: '#030914',
+    terminalText: '#e7f0ff',
+    terminalDim: '#7d8ba1',
+  },
+};
+
+function alpha(hex: string, opacity: string) {
+  return `${hex}${opacity}`;
+}
+
+export function makeRootForgeStyles(colors: RootForgeTheme) {
+  const isDark = colors.mode === 'dark';
+
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.paper,
+    },
+    content: {
+      padding: spacing.lg,
+      paddingBottom: 92,
+      gap: spacing.lg,
+    },
+    phoneShell: {
+      flex: 1,
+      backgroundColor: colors.paper,
+    },
+    appBar: {
+      minHeight: 72,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.line,
+      backgroundColor: colors.paper,
+    },
+    appBarCopy: {
+      flex: 1,
+    },
+    appBarTitle: {
+      color: colors.ink,
+      fontSize: 19,
+      fontWeight: '900',
+      letterSpacing: -0.2,
+    },
+    appBarSubtitle: {
+      color: colors.slate,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    screenContent: {
+      padding: spacing.lg,
+      paddingBottom: 96,
+      gap: spacing.lg,
+    },
+    iconButton: {
+      width: 38,
+      height: 38,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panel,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconButtonText: {
+      color: colors.ink,
+      fontSize: 28,
+      fontWeight: '700',
+      lineHeight: 30,
+    },
+    cubeMarkSmall: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.md,
+      borderWidth: 2,
+      borderColor: colors.blue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: isDark ? '#102542' : '#eef5ff',
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.md,
+      alignItems: 'center',
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    cubeMark: {
+      width: 34,
+      height: 34,
+      borderRadius: radius.sm,
+      borderWidth: 2,
+      borderColor: colors.blue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: isDark ? '#102542' : '#eef5ff',
+    },
+    cubeMarkText: {
+      color: colors.blue,
+      fontSize: 17,
+      fontWeight: '900',
+    },
+    brand: {
+      color: colors.ink,
+      fontSize: 27,
+      fontWeight: '900',
+      letterSpacing: -0.5,
+    },
+    subtitle: {
+      color: colors.slate,
+      fontSize: 13,
+      marginTop: 1,
+    },
+    statusPill: {
+      borderRadius: 999,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderWidth: 1,
+    },
+    ready: {
+      backgroundColor: isDark ? '#0d3828' : '#d9f5e6',
+      borderColor: isDark ? '#1d7e54' : '#a7e8c2',
+    },
+    waiting: {
+      backgroundColor: isDark ? '#332710' : '#fff1cf',
+      borderColor: isDark ? '#80601f' : '#f6d990',
+    },
+    statusText: {
+      color: colors.graphite,
+      fontWeight: '800',
+      fontSize: 12,
+    },
+    bottomNav: {
+      position: 'absolute',
+      left: spacing.lg,
+      right: spacing.lg,
+      bottom: spacing.md,
+      minHeight: 62,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: isDark ? '#081523f2' : '#fffffff2',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      shadowColor: colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 18,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 10,
+    },
+    navItem: {
+      minHeight: 48,
+      minWidth: 52,
+      borderRadius: radius.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+    },
+    navItemActive: {
+      backgroundColor: isDark ? '#102a4a' : '#e9f1ff',
+    },
+    navIcon: {
+      color: colors.slate,
+      fontWeight: '900',
+      fontSize: 17,
+    },
+    navIconActive: {
+      color: colors.blue,
+    },
+    navLabel: {
+      color: colors.slate,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    navLabelActive: {
+      color: colors.blue,
+    },
+    projectTabs: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    projectChip: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.line,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      backgroundColor: colors.panel,
+    },
+    projectChipActive: {
+      backgroundColor: colors.blue,
+      borderColor: colors.blue,
+    },
+    projectChipText: {
+      color: colors.graphite,
+      fontWeight: '800',
+    },
+    projectChipTextActive: {
+      color: '#fff',
+    },
+    workspacePanel: {
+      borderRadius: radius.lg,
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.line,
+      padding: spacing.lg,
+      gap: spacing.md,
+      shadowColor: colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 2,
+    },
+    rowBetween: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      color: colors.ink,
+      fontSize: 18,
+      fontWeight: '900',
+      letterSpacing: -0.2,
+    },
+    muted: {
+      color: colors.slate,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    pathBadge: {
+      overflow: 'hidden',
+      borderRadius: 999,
+      backgroundColor: isDark ? '#102033' : '#eef2f6',
+      borderWidth: 1,
+      borderColor: colors.line,
+      color: colors.graphite,
+      fontSize: 12,
+      fontWeight: '900',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      minWidth: 74,
+      textAlign: 'center',
+      flexShrink: 0,
+    },
+    workspacePath: {
+      color: colors.blue,
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    quickActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    quickActionTile: {
+      flexGrow: 1,
+      flexBasis: '47%',
+      minHeight: 78,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      padding: spacing.md,
+      justifyContent: 'space-between',
+    },
+    quickActionIcon: {
+      color: colors.blue,
+      fontSize: 22,
+      fontWeight: '900',
+    },
+    quickActionLabel: {
+      color: colors.graphite,
+      fontSize: 12,
+      fontWeight: '900',
+    },
+    heroCard: {
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panel,
+      padding: spacing.lg,
+      gap: spacing.sm,
+      shadowColor: colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 2,
+    },
+    eyebrow: {
+      color: colors.slate,
+      fontSize: 12,
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    heroPath: {
+      color: colors.ink,
+      fontSize: 19,
+      fontWeight: '900',
+      marginTop: 2,
+    },
+    listRow: {
+      minHeight: 58,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      padding: spacing.md,
+    },
+    listRowActive: {
+      borderColor: colors.blue,
+      backgroundColor: isDark ? '#102a4a' : '#e9f1ff',
+    },
+    listIcon: {
+      color: colors.blue,
+      fontSize: 20,
+      fontWeight: '900',
+      width: 24,
+      textAlign: 'center',
+    },
+    listCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    listTitle: {
+      color: colors.graphite,
+      fontSize: 14,
+      fontWeight: '900',
+    },
+    chevron: {
+      color: colors.slate,
+      fontSize: 23,
+      fontWeight: '700',
+    },
+    linkText: {
+      color: colors.blue,
+      fontSize: 13,
+      fontWeight: '900',
+    },
+    grid: {
+      gap: spacing.lg,
+    },
+    panel: {
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panel,
+      padding: spacing.lg,
+      gap: spacing.md,
+      shadowColor: colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 2,
+    },
+    search: {
+      minHeight: 44,
+      flex: 1,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      paddingHorizontal: spacing.md,
+      color: colors.ink,
+    },
+    treeGroup: {
+      gap: spacing.xs,
+    },
+    fileRow: {
+      minHeight: 39,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      borderRadius: radius.sm,
+      backgroundColor: colors.panelStrong,
+      paddingRight: spacing.sm,
+    },
+    fileRowSelected: {
+      backgroundColor: isDark ? '#12335b' : '#dce8ff',
+      borderWidth: 1,
+      borderColor: colors.blue,
+    },
+    fileIcon: {
+      color: colors.blue,
+      width: 16,
+      fontWeight: '900',
+    },
+    fileName: {
+      flex: 1,
+      color: colors.graphite,
+      fontWeight: '800',
+    },
+    fileType: {
+      color: colors.cyan,
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+    },
+    prompt: {
+      minHeight: 92,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      color: colors.ink,
+      padding: spacing.md,
+      textAlignVertical: 'top',
+    },
+    primaryButton: {
+      minHeight: 46,
+      borderRadius: radius.md,
+      backgroundColor: colors.blue,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    primaryButtonText: {
+      color: '#fff',
+      fontWeight: '900',
+    },
+    secondaryButton: {
+      minHeight: 46,
+      borderRadius: radius.md,
+      backgroundColor: isDark ? '#16283e' : colors.ink,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
+    secondaryButtonText: {
+      color: '#fff',
+      fontWeight: '900',
+    },
+    planText: {
+      color: colors.graphite,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    permissionGrid: {
+      gap: spacing.sm,
+    },
+    permissionRow: {
+      minHeight: 46,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderRadius: radius.md,
+      backgroundColor: colors.panelStrong,
+      borderWidth: 1,
+      borderColor: colors.line,
+      paddingHorizontal: spacing.md,
+    },
+    permissionLabel: {
+      color: colors.graphite,
+      fontWeight: '800',
+    },
+    actionCard: {
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      padding: spacing.md,
+      gap: spacing.sm,
+    },
+    actionTitle: {
+      flex: 1,
+      color: colors.graphite,
+      fontWeight: '900',
+    },
+    actionMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    diffHeaderCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    actionStatus: {
+      color: colors.slate,
+      fontSize: 11,
+      fontWeight: '900',
+      textTransform: 'uppercase',
+    },
+    risk: {
+      overflow: 'hidden',
+      borderRadius: 999,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    riskLow: {
+      color: colors.green,
+      backgroundColor: alpha(colors.green, isDark ? '26' : '1f'),
+    },
+    riskMedium: {
+      color: colors.amber,
+      backgroundColor: alpha(colors.amber, isDark ? '24' : '24'),
+    },
+    riskHigh: {
+      color: colors.red,
+      backgroundColor: alpha(colors.red, isDark ? '24' : '1f'),
+    },
+    actionButtons: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    smallButton: {
+      minHeight: 42,
+      flex: 1,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.sm,
+    },
+    denyButton: {
+      backgroundColor: alpha(colors.red, isDark ? '18' : '16'),
+      borderWidth: 1,
+      borderColor: alpha(colors.red, isDark ? '80' : '60'),
+    },
+    allowButton: {
+      backgroundColor: alpha(colors.blue, isDark ? '22' : '18'),
+      borderWidth: 1,
+      borderColor: alpha(colors.blue, isDark ? '88' : '55'),
+    },
+    denyText: {
+      color: colors.red,
+      fontWeight: '900',
+    },
+    allowText: {
+      color: colors.blue,
+      fontWeight: '900',
+    },
+    acceptedBadge: {
+      backgroundColor: alpha(colors.green, isDark ? '22' : '1f'),
+      color: colors.green,
+    },
+    rejectedBadge: {
+      backgroundColor: alpha(colors.red, isDark ? '22' : '1f'),
+      color: colors.red,
+    },
+    diffContainer: {
+      borderRadius: radius.md,
+      backgroundColor: colors.terminal,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
+    diffLine: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 5,
+      gap: spacing.sm,
+    },
+    diffLineAdded: {
+      backgroundColor: 'rgba(31, 157, 85, 0.22)',
+    },
+    diffLineRemoved: {
+      backgroundColor: 'rgba(211, 55, 74, 0.25)',
+    },
+    diffPrefix: {
+      width: 10,
+      color: '#d7e3f7',
+      fontFamily: 'monospace',
+      fontSize: 12,
+    },
+    diffText: {
+      flex: 1,
+      color: colors.terminalText,
+      fontFamily: 'monospace',
+      fontSize: 12,
+    },
+    editor: {
+      minHeight: 240,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: isDark ? '#06101c' : '#fbfdff',
+      color: colors.ink,
+      padding: spacing.md,
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    terminal: {
+      borderRadius: radius.md,
+      backgroundColor: colors.terminal,
+      borderWidth: 1,
+      borderColor: colors.line,
+      padding: spacing.md,
+      gap: spacing.xs,
+    },
+    terminalText: {
+      color: colors.terminalText,
+      fontFamily: 'monospace',
+      fontSize: 12,
+    },
+    terminalDim: {
+      color: colors.terminalDim,
+      fontFamily: 'monospace',
+      fontSize: 12,
+    },
+    terminalError: {
+      color: '#ff9cab',
+      fontFamily: 'monospace',
+      fontSize: 12,
+    },
+    settingsRow: {
+      minHeight: 58,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    choiceRow: {
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+      padding: spacing.md,
+      gap: spacing.sm,
+    },
+    compactButton: {
+      minHeight: 34,
+      borderRadius: radius.sm,
+      backgroundColor: colors.blue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    compactButtonText: {
+      color: '#fff',
+      fontSize: 12,
+      fontWeight: '900',
+    },
+    inlineComposer: {
+      gap: spacing.sm,
+    },
+    quickButtonPrimary: {
+      minHeight: 44,
+      borderRadius: radius.md,
+      backgroundColor: colors.blue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    quickButtonPrimaryText: {
+      color: '#fff',
+      fontWeight: '900',
+    },
+    quickButtonGhost: {
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panelStrong,
+    },
+    quickButtonGhostText: {
+      color: colors.graphite,
+      fontWeight: '800',
+    },
+    segmented: {
+      flexDirection: 'row',
+      borderRadius: radius.md,
+      backgroundColor: isDark ? '#07111d' : '#eef2f6',
+      padding: 4,
+      gap: 4,
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
+    segment: {
+      flex: 1,
+      minHeight: 36,
+      borderRadius: radius.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    segmentActive: {
+      backgroundColor: colors.panel,
+    },
+    segmentText: {
+      color: colors.slate,
+      fontWeight: '800',
+    },
+    segmentTextActive: {
+      color: colors.ink,
+    },
+    resultList: {
+      borderRadius: radius.md,
+      backgroundColor: colors.panelStrong,
+      borderWidth: 1,
+      borderColor: colors.line,
+      padding: spacing.sm,
+      gap: spacing.xs,
+    },
+    resultText: {
+      color: colors.graphite,
+      fontSize: 12,
+    },
+    emptyText: {
+      color: colors.slate,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    selectionPath: {
+      color: colors.blue,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    errorText: {
+      color: colors.red,
+      fontWeight: '800',
+    },
+    deleteProjectButton: {
+      borderRadius: radius.md,
+      backgroundColor: alpha(colors.red, isDark ? '18' : '16'),
+      borderWidth: 1,
+      borderColor: alpha(colors.red, isDark ? '80' : '55'),
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    deleteProjectText: {
+      color: colors.red,
+      fontWeight: '900',
+    },
+    authSummaryCard: {
+      borderRadius: radius.md,
+      backgroundColor: colors.panelStrong,
+      borderWidth: 1,
+      borderColor: colors.line,
+      padding: spacing.md,
+      gap: spacing.xs,
+    },
+    authSummaryTitle: {
+      color: colors.ink,
+      fontSize: 16,
+      fontWeight: '900',
+    },
+    profileHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    avatar: {
+      width: 66,
+      height: 66,
+      borderRadius: 33,
+      backgroundColor: isDark ? '#18304c' : '#dce8ff',
+      borderWidth: 1,
+      borderColor: colors.line,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarText: {
+      color: colors.blue,
+      fontSize: 26,
+      fontWeight: '900',
+      textTransform: 'uppercase',
+    },
+    googleButton: {
+      width: '100%',
+      height: 48,
+    },
+  });
+}
+
+export type RootForgeStyles = ReturnType<typeof makeRootForgeStyles>;

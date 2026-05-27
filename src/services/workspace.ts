@@ -24,6 +24,18 @@ export type WorkspaceSearchResult = {
   type: 'file' | 'folder';
 };
 
+export type WorkspaceMoveTarget = {
+  path: string;
+  name: string;
+  type: 'folder';
+};
+
+export type WorkspaceWriteOperation = {
+  type: 'write_file' | 'delete_path';
+  path: string;
+  content?: string;
+};
+
 const ROOT_DIR_NAME = 'root-workspace';
 const WEB_STORAGE_KEY = 'rootforge.workspace.v1';
 
@@ -160,6 +172,17 @@ function assertValidName(name: string) {
   return trimmed;
 }
 
+function assertValidRelativePath(path: string) {
+  const normalized = joinRelativePath(path);
+  if (!normalized) {
+    throw new Error('Destination path is required.');
+  }
+
+  const segments = normalized.split('/').filter(Boolean);
+  segments.forEach(assertValidName);
+  return segments.join('/');
+}
+
 function getWebState(): WebWorkspaceState {
   if (typeof localStorage === 'undefined') {
     return { nodes: {} };
@@ -279,6 +302,19 @@ function getWebProjectEntries(projectName: string) {
   }
 
   return entries;
+}
+
+function ensureWebParentFolders(state: WebWorkspaceState, projectName: string, relativePath: string) {
+  const projectPrefix = getWebProjectPrefix(projectName);
+  const segments = parentRelativePath(relativePath).split('/').filter(Boolean);
+
+  let currentPath = projectPrefix;
+  for (const segment of segments) {
+    currentPath = joinRelativePath(currentPath, segment);
+    if (!state.nodes[currentPath]) {
+      state.nodes[currentPath] = { type: 'folder' };
+    }
+  }
 }
 
 async function listProjectsWeb(): Promise<WorkspaceProject[]> {
@@ -410,6 +446,65 @@ export async function createEntry(projectName: string, parentPath: string, name:
   return relativePath;
 }
 
+export async function readFileContent(projectName: string, path: string) {
+  const relativePath = joinRelativePath(path);
+  if (!relativePath) {
+    throw new Error('File path is required.');
+  }
+
+  if (Platform.OS === 'web') {
+    const state = getWebState();
+    const fullPath = joinRelativePath(getWebProjectPrefix(projectName), relativePath);
+    const item = state.nodes[fullPath];
+    if (!item || item.type !== 'file') {
+      throw new Error('File no longer exists.');
+    }
+
+    return item.content ?? '';
+  }
+
+  const file = resolveNativeFile(projectName, relativePath);
+  if (!file.exists) {
+    throw new Error('File no longer exists.');
+  }
+
+  return file.textSync();
+}
+
+export async function writeFileContent(projectName: string, path: string, content: string) {
+  const relativePath = joinRelativePath(path);
+  if (!relativePath) {
+    throw new Error('File path is required.');
+  }
+
+  if (Platform.OS === 'web') {
+    const state = getWebState();
+    ensureWebParentFolders(state, projectName, relativePath);
+    state.nodes[joinRelativePath(getWebProjectPrefix(projectName), relativePath)] = {
+      type: 'file',
+      content,
+    };
+    saveWebState(state);
+    return relativePath;
+  }
+
+  const parentPath = parentRelativePath(relativePath);
+  if (parentPath) {
+    const parentDir = resolveNativeDirectory(projectName, parentPath);
+    if (!parentDir.exists) {
+      parentDir.create({ idempotent: true, intermediates: true });
+    }
+  }
+
+  const file = resolveNativeFile(projectName, relativePath);
+  if (!file.exists) {
+    file.create({ intermediates: true, overwrite: false });
+  }
+
+  file.write(content);
+  return relativePath;
+}
+
 export async function renameEntry(projectName: string, path: string, nextName: string) {
   const safeName = assertValidName(nextName);
   const parentPath = parentRelativePath(path);
@@ -445,6 +540,88 @@ export async function renameEntry(projectName: string, path: string, nextName: s
   }
 
   file.move(resolveNativeFile(projectName, nextRelativePath));
+  return nextRelativePath;
+}
+
+export async function moveEntry(projectName: string, path: string, destinationFolderPath: string) {
+  const currentPath = joinRelativePath(path);
+  if (!currentPath) {
+    throw new Error('Select an item to move first.');
+  }
+
+  const targetFolderPath = destinationFolderPath.trim()
+    ? assertValidRelativePath(destinationFolderPath)
+    : '';
+  const itemName = currentPath.split('/').filter(Boolean).pop();
+  if (!itemName) {
+    throw new Error('Unable to resolve the selected item name.');
+  }
+
+  const nextRelativePath = joinRelativePath(targetFolderPath, itemName);
+  if (!nextRelativePath || nextRelativePath === currentPath) {
+    return currentPath;
+  }
+
+  if (targetFolderPath && (targetFolderPath === currentPath || targetFolderPath.startsWith(`${currentPath}/`))) {
+    throw new Error('Cannot move a folder into itself.');
+  }
+
+  if (Platform.OS === 'web') {
+    const state = getWebState();
+    const projectPrefix = getWebProjectPrefix(projectName);
+    const currentFullPath = joinRelativePath(projectPrefix, currentPath);
+    const nextFullPath = joinRelativePath(projectPrefix, nextRelativePath);
+
+    if (state.nodes[nextFullPath]) {
+      throw new Error('An item already exists at the destination.');
+    }
+
+    if (targetFolderPath) {
+      const destinationFolderFullPath = joinRelativePath(projectPrefix, targetFolderPath);
+      if (!state.nodes[destinationFolderFullPath] || state.nodes[destinationFolderFullPath].type !== 'folder') {
+        throw new Error('Destination folder does not exist.');
+      }
+    }
+
+    for (const existingPath of Object.keys(state.nodes)) {
+      if (existingPath === currentFullPath || existingPath.startsWith(`${currentFullPath}/`)) {
+        const suffix = existingPath.slice(currentFullPath.length);
+        state.nodes[`${nextFullPath}${suffix}`] = state.nodes[existingPath];
+        delete state.nodes[existingPath];
+      }
+    }
+
+    saveWebState(state);
+    return nextRelativePath;
+  }
+
+  const destinationDir = targetFolderPath ? resolveNativeDirectory(projectName, targetFolderPath) : resolveNativeDirectory(projectName);
+  if (!destinationDir.exists) {
+    throw new Error('Destination folder does not exist.');
+  }
+
+  const nextDir = resolveNativeDirectory(projectName, nextRelativePath);
+  if (nextDir.exists) {
+    throw new Error('An item already exists at the destination.');
+  }
+
+  const nextFile = resolveNativeFile(projectName, nextRelativePath);
+  if (nextFile.exists) {
+    throw new Error('An item already exists at the destination.');
+  }
+
+  const dir = resolveNativeDirectory(projectName, currentPath);
+  if (dir.exists) {
+    dir.move(nextDir);
+    return nextRelativePath;
+  }
+
+  const file = resolveNativeFile(projectName, currentPath);
+  if (!file.exists) {
+    throw new Error('Item no longer exists.');
+  }
+
+  file.move(nextFile);
   return nextRelativePath;
 }
 
@@ -489,6 +666,97 @@ export async function deleteProject(projectName: string) {
   }
 }
 
+export async function applyFileOperations(projectName: string, operations: WorkspaceWriteOperation[]) {
+  for (const operation of operations) {
+    if (operation.type === 'write_file') {
+      await writeFileContent(projectName, operation.path, operation.content ?? '');
+      continue;
+    }
+
+    await deleteEntry(projectName, operation.path);
+  }
+}
+
+export async function renameProject(projectName: string, nextName: string) {
+  const safeName = assertValidName(nextName);
+  if (projectName === safeName) {
+    return safeName;
+  }
+
+  if (Platform.OS === 'web') {
+    const state = getWebState();
+    const currentPrefix = getWebProjectPrefix(projectName);
+    const nextPrefix = getWebProjectPrefix(safeName);
+    if (state.nodes[nextPrefix]) {
+      throw new Error('A project with that name already exists.');
+    }
+
+    for (const existingPath of Object.keys(state.nodes)) {
+      if (existingPath === currentPrefix || existingPath.startsWith(`${currentPrefix}/`)) {
+        const suffix = existingPath.slice(currentPrefix.length);
+        state.nodes[`${nextPrefix}${suffix}`] = state.nodes[existingPath];
+        delete state.nodes[existingPath];
+      }
+    }
+
+    saveWebState(state);
+    return safeName;
+  }
+
+  const projectDir = resolveNativeDirectory(projectName);
+  if (!projectDir.exists) {
+    throw new Error('Project no longer exists.');
+  }
+
+  const nextDir = resolveNativeDirectory(safeName);
+  if (nextDir.exists) {
+    throw new Error('A project with that name already exists.');
+  }
+
+  await projectDir.move(nextDir);
+  return safeName;
+}
+
+export async function duplicateProject(projectName: string, nextName: string) {
+  const safeName = assertValidName(nextName);
+
+  if (Platform.OS === 'web') {
+    const state = getWebState();
+    const currentPrefix = getWebProjectPrefix(projectName);
+    const nextPrefix = getWebProjectPrefix(safeName);
+    if (!state.nodes[currentPrefix]) {
+      throw new Error('Project no longer exists.');
+    }
+
+    if (state.nodes[nextPrefix]) {
+      throw new Error('A project with that name already exists.');
+    }
+
+    for (const [existingPath, value] of Object.entries(state.nodes)) {
+      if (existingPath === currentPrefix || existingPath.startsWith(`${currentPrefix}/`)) {
+        const suffix = existingPath.slice(currentPrefix.length);
+        state.nodes[`${nextPrefix}${suffix}`] = { ...value };
+      }
+    }
+
+    saveWebState(state);
+    return safeName;
+  }
+
+  const sourceDir = resolveNativeDirectory(projectName);
+  if (!sourceDir.exists) {
+    throw new Error('Project no longer exists.');
+  }
+
+  const targetDir = resolveNativeDirectory(safeName);
+  if (targetDir.exists) {
+    throw new Error('A project with that name already exists.');
+  }
+
+  await sourceDir.copy(targetDir);
+  return safeName;
+}
+
 export async function searchProject(projectName: string, query: string) {
   const normalized = query.trim().toLowerCase();
   if (!normalized) {
@@ -514,6 +782,33 @@ export async function searchProject(projectName: string, query: string) {
 
       if (node.children) {
         visit(node.children);
+      }
+    }
+  };
+
+  visit(project.files);
+  return results;
+}
+
+export async function listProjectFolders(projectName: string) {
+  const projects = await listProjects();
+  const project = projects.find((item) => item.name === projectName);
+  if (!project) {
+    return [] as WorkspaceMoveTarget[];
+  }
+
+  const results: WorkspaceMoveTarget[] = [{ path: '', name: '(project root)', type: 'folder' }];
+  const visit = (nodes: WorkspaceNode[]) => {
+    for (const node of nodes) {
+      if (node.type === 'folder') {
+        results.push({
+          path: node.path,
+          name: node.name,
+          type: 'folder',
+        });
+        if (node.children) {
+          visit(node.children);
+        }
       }
     }
   };
